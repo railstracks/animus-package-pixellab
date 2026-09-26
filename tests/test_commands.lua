@@ -171,10 +171,12 @@ check("pixflux auto name has seed", r.files[1].path:match("_s0%.png$") ~= nil, r
 do
   local real_date = os.date
   os.date = function(fmt, t)
+    -- exact kernel behavior: unknown formats rewritten; '!' passes through
+    -- strftime as a literal; t ignored — wall clock always
     if fmt ~= "%Y-%m-%dT%H:%M:%SZ" and fmt ~= "!%Y-%m-%dT%H:%M:%SZ" then
       fmt = "!%Y-%m-%dT%H:%M:%SZ"
     end
-    return real_date(fmt)
+    return "!" .. real_date("%Y-%m-%dT%H:%M:%SZ")
   end
   local r2 = run(mkctx({ description = "x", width = 32, height = 32 }))
   os.date = real_date

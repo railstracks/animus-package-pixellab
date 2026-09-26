@@ -1,7 +1,7 @@
 {
   "kind": "api_package",
   "name": "pixellab",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "display_name": "PixelLab",
   "description": "PixelLab pixel-art generation API \u2014 text-to-image (Pixflux), style transfer (Bitforge), animation (skeleton + text), rotation, inpainting, skeleton estimation. Images flow through the package filespace: inputs are paths to files (usually outputs of earlier calls), outputs are written as PNG files and returned as paths.",
   "keywords": [
