@@ -140,6 +140,42 @@ do
   check("keypoints fractional z_index rounded", kpz ~= nil and kpz[1][1].z_index == -3 and kpz[1][2].z_index == 2, true)
 end
 
+-- timeout plumbing (0.1.4): slow_timeout_s resolution + opts passthrough
+local saved_state = _G.pkg_state or {}
+do
+  local st = { api_token = "tok", base_url = "" }
+  _G.pkg_state = st
+  local pkgT = {
+    get_state = function(_, k) return st[k] end,
+  }
+  pkgT.get_state = function(k) return st[k] end
+  check("timeout default 240", shared.slow_timeout_s(pkgT) == 240, true)
+  st.timeout_s = "120"
+  check("timeout state override 120", shared.slow_timeout_s(pkgT) == 120, true)
+  st.timeout_s = "999"
+  check("timeout clamped 300", shared.slow_timeout_s(pkgT) == 300, true)
+  st.timeout_s = "0"
+  check("timeout garbage->default", shared.slow_timeout_s(pkgT) == 240, true)
+  -- opts passthrough: stub ctx.http.post captures opts
+  local captured
+  local ctxT = { http = { post = function(_, url, opts)
+      captured = { url = url, opts = opts }
+      return { status = 200, json = {} }
+    end } }
+  ctxT.http.post = function(url, opts)
+    captured = { url = url, opts = opts }
+    return { status = 200, json = {} }
+  end
+  local jsonEnc = json.encode
+  json.encode = function(x) return "{}" end
+  shared.post(ctxT, pkgT, "/generate-image-pixflux", {}, 240)
+  json.encode = jsonEnc
+  check("post passes timeout_s", captured ~= nil and captured.opts.timeout_s == 240, true)
+  shared.post(ctxT, pkgT, "/status", {})
+  check("post without timeout omits field", captured.opts.timeout_s == nil, true)
+end
+_G.pkg_state = saved_state
+
 print("")
 if failures == 0 then
   print("test_shared: ALL OK")

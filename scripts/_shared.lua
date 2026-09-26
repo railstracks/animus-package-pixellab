@@ -295,18 +295,32 @@ end
 
 -- POST <base>/v1<path> with a JSON body. Returns {ok=true, json=...} or
 -- {ok=false, error=...} with status-mapped, action-friendly messages.
-function shared.post(ctx, pkg, path, body)
-  local r = ctx.http.post(shared.base_url(pkg) .. "/v1" .. path, {
+-- Per-call timeout (kernel #118/#119 path: opts.timeout_s, clamped 1-300s server-side).
+-- Generation/animation routinely runs 20-90s+ on 200x200 assets; the kernel default
+-- is 30s when unset. Read the operator-tunable state field, fall back to 240.
+function shared.slow_timeout_s(pkg)
+  local v = tonumber(pkg.get_state("timeout_s"))
+  if v == nil or v < 1 then return 240 end
+  if v > 300 then return 300 end  -- kernel clamp ceiling
+  return math.floor(v)
+end
+
+function shared.post(ctx, pkg, path, body, timeout_s)
+  local opts = {
     headers = shared.headers(pkg),
     body = json.encode(body)
-  })
+  }
+  if timeout_s then opts.timeout_s = timeout_s end
+  local r = ctx.http.post(shared.base_url(pkg) .. "/v1" .. path, opts)
   return shared.interpret(r)
 end
 
-function shared.get(ctx, pkg, path)
-  local r = ctx.http.get(shared.base_url(pkg) .. "/v1" .. path, {
+function shared.get(ctx, pkg, path, timeout_s)
+  local opts = {
     headers = shared.headers(pkg)
-  })
+  }
+  if timeout_s then opts.timeout_s = timeout_s end
+  local r = ctx.http.get(shared.base_url(pkg) .. "/v1" .. path, opts)
   return shared.interpret(r)
 end
 

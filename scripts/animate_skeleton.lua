@@ -67,7 +67,7 @@ function run(ctx)
   end
   if seed ~= nil then body.seed = seed end
 
-  local r = shared.post(ctx, pkg, "/animate-with-skeleton", body)
+  local r = shared.post(ctx, pkg, "/animate-with-skeleton", body, shared.slow_timeout_s(pkg))
   if not r.ok then
     return {success = false, error = r.error, http_status = r.http_status}
   end

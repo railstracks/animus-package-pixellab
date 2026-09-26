@@ -1,7 +1,7 @@
 {
   "kind": "api_package",
   "name": "pixellab",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "display_name": "PixelLab",
   "description": "PixelLab pixel-art generation API \u2014 text-to-image (Pixflux), style transfer (Bitforge), animation (skeleton + text), rotation, inpainting, skeleton estimation. Images flow through the package filespace: inputs are paths to files (usually outputs of earlier calls), outputs are written as PNG files and returned as paths.",
   "keywords": [
@@ -28,6 +28,11 @@
       "type": "string",
       "default": "https://api.pixellab.ai",
       "description": "API base URL (a trailing /v1 is tolerated and stripped)"
+    },
+    "timeout_s": {
+      "type": "integer",
+      "default": 240,
+      "description": "Per-call timeout for generation/animation requests in seconds (kernel clamps to 1-300). Default 240; cheap reads always use the kernel default 30s."
     }
   },
   "commands": [

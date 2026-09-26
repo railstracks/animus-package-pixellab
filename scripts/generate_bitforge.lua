@@ -108,7 +108,7 @@ function run(ctx)
   if kp ~= nil then body.skeleton_keypoints = kp end
   if seed ~= nil then body.seed = seed end
 
-  local r = shared.post(ctx, pkg, "/generate-image-bitforge", body)
+  local r = shared.post(ctx, pkg, "/generate-image-bitforge", body, shared.slow_timeout_s(pkg))
   if not r.ok then
     return {success = false, error = r.error, http_status = r.http_status}
   end

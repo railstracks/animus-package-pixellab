@@ -10,7 +10,7 @@ function run(ctx)
 
   local body = { image = img }
 
-  local r = shared.post(ctx, pkg, "/estimate-skeleton", body)
+  local r = shared.post(ctx, pkg, "/estimate-skeleton", body, shared.slow_timeout_s(pkg))
   if not r.ok then
     return {success = false, error = r.error, http_status = r.http_status}
   end
