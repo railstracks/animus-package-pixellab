@@ -165,6 +165,23 @@ check("pixflux auto name flat", r.files[1].path:find("/") == nil, r.files[1].pat
 check("pixflux auto name prefix", r.files[1].path:match("^pixflux%-") ~= nil, r.files[1].path)
 check("pixflux auto name has seed", r.files[1].path:match("_s0%.png$") ~= nil, r.files[1].path)
 
+-- kernel os.date simulation (field-tested Sept 26): only the exact ISO format
+-- is honored, anything else silently falls back to ISO, time arg ignored.
+-- Generated names must stay slug-safe (no colons) under that behavior.
+do
+  local real_date = os.date
+  os.date = function(fmt, t)
+    if fmt ~= "%Y-%m-%dT%H:%M:%SZ" and fmt ~= "!%Y-%m-%dT%H:%M:%SZ" then
+      fmt = "!%Y-%m-%dT%H:%M:%SZ"
+    end
+    return real_date(fmt)
+  end
+  local r2 = run(mkctx({ description = "x", width = 32, height = 32 }))
+  os.date = real_date
+  check("auto name slug-safe under kernel os.date",
+        r2.files[1].path:find(":") == nil and r2.files[1].path:match("^[%w%.%-_]+$") ~= nil, r2.files[1].path)
+end
+
 -- validation fails before http
 http_calls = 0
 r = run(mkctx({ description = "x", width = 16, height = 16 }))  -- area too small

@@ -251,7 +251,11 @@ function shared.out_base(ctx, prefix, filename, seed, suffix)
   if filename ~= nil and filename ~= "" then
     return shared.sanitize_filename(filename)
   end
-  local stamp = os.date("!%Y%m%d-%H%M%S", math.floor(ctx.now / 1000))
+  -- Kernel os.date only supports "!%Y-%m-%dT%H:%M:%SZ" (anything else silently
+  -- falls back to it and the time arg is ignored — field-tested Sept 26), so
+  -- use exactly that and strip the colons for slug-safety. Works on stock
+  -- lua5.4 and the sandbox alike.
+  local stamp = os.date("!%Y-%m-%dT%H:%M:%SZ", math.floor(ctx.now / 1000)):gsub(":", "")
   return prefix .. "-" .. stamp .. "_s" .. tostring(seed or 0) .. (suffix or "") .. ".png"
 end
 
