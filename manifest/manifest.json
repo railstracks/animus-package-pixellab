@@ -1,0 +1,557 @@
+{
+  "kind": "api_package",
+  "name": "pixellab",
+  "version": "0.1.0",
+  "display_name": "PixelLab",
+  "description": "PixelLab pixel-art generation API — text-to-image (Pixflux), style transfer (Bitforge), animation (skeleton + text), rotation, inpainting, skeleton estimation. Images flow through the package filespace: inputs are paths to files (usually outputs of earlier calls), outputs are written as PNG files and returned as paths.",
+  "keywords": [
+    "pixellab",
+    "pixel art",
+    "image generation",
+    "animation",
+    "game assets",
+    "sprites"
+  ],
+  "author": "Kestrel",
+  "license": "MIT",
+  "homepage": "https://github.com/railstracks/animus-package-pixellab",
+  "egress_hosts": [
+    "api.pixellab.ai"
+  ],
+  "state_schema": {
+    "api_token": {
+      "type": "string",
+      "secret": true,
+      "description": "PixelLab API token from https://pixellab.ai/account"
+    },
+    "base_url": {
+      "type": "string",
+      "default": "https://api.pixellab.ai",
+      "description": "API base URL (a trailing /v1 is tolerated and stripped)"
+    }
+  },
+  "commands": [
+    {
+      "name": "generate pixflux",
+      "kind": "action",
+      "description": "Text-to-image generation (Pixflux model). Width/height 16-400 each, area between 32x32 and 400x400 (e.g. 64x64, 128x96). Optional style enums (outline, shading, detail, view, direction) are weakly guiding; init_image/color_image are filespace paths; seed for reproducibility. Output: one PNG file (flat name: pixflux-<timestamp>_s<seed>.png, or your filename).",
+      "parameters": {
+        "description": {
+          "type": "string",
+          "required": true
+        },
+        "width": {
+          "type": "integer",
+          "required": true
+        },
+        "height": {
+          "type": "integer",
+          "required": true
+        },
+        "text_guidance_scale": {
+          "type": "string",
+          "required": false
+        },
+        "outline": {
+          "type": "string",
+          "required": false
+        },
+        "shading": {
+          "type": "string",
+          "required": false
+        },
+        "detail": {
+          "type": "string",
+          "required": false
+        },
+        "view": {
+          "type": "string",
+          "required": false
+        },
+        "direction": {
+          "type": "string",
+          "required": false
+        },
+        "isometric": {
+          "type": "boolean",
+          "required": false
+        },
+        "no_background": {
+          "type": "boolean",
+          "required": false
+        },
+        "init_image": {
+          "type": "string",
+          "required": false
+        },
+        "init_image_strength": {
+          "type": "integer",
+          "required": false
+        },
+        "color_image": {
+          "type": "string",
+          "required": false
+        },
+        "seed": {
+          "type": "integer",
+          "required": false
+        },
+        "filename": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "script_file": "scripts/generate_pixflux.lua"
+    },
+    {
+      "name": "generate bitforge",
+      "kind": "action",
+      "description": "Style-transfer generation (Bitforge model): generate from a description while transferring the style of a style_image. Width/height 16-200 each, area at most 200x200. Supports inpainting (inpainting_image + mask_image), forced palette, transparent background, skeleton guidance. Output: one PNG file (flat name: bitforge-<timestamp>_s<seed>.png, or your filename).",
+      "parameters": {
+        "description": {
+          "type": "string",
+          "required": true
+        },
+        "width": {
+          "type": "integer",
+          "required": true
+        },
+        "height": {
+          "type": "integer",
+          "required": true
+        },
+        "negative_description": {
+          "type": "string",
+          "required": false
+        },
+        "text_guidance_scale": {
+          "type": "string",
+          "required": false
+        },
+        "style_image": {
+          "type": "string",
+          "required": false
+        },
+        "style_strength": {
+          "type": "integer",
+          "required": false
+        },
+        "outline": {
+          "type": "string",
+          "required": false
+        },
+        "shading": {
+          "type": "string",
+          "required": false
+        },
+        "detail": {
+          "type": "string",
+          "required": false
+        },
+        "view": {
+          "type": "string",
+          "required": false
+        },
+        "direction": {
+          "type": "string",
+          "required": false
+        },
+        "isometric": {
+          "type": "boolean",
+          "required": false
+        },
+        "oblique_projection": {
+          "type": "boolean",
+          "required": false
+        },
+        "no_background": {
+          "type": "boolean",
+          "required": false
+        },
+        "coverage_percentage": {
+          "type": "string",
+          "required": false
+        },
+        "init_image": {
+          "type": "string",
+          "required": false
+        },
+        "init_image_strength": {
+          "type": "integer",
+          "required": false
+        },
+        "inpainting_image": {
+          "type": "string",
+          "required": false
+        },
+        "mask_image": {
+          "type": "string",
+          "required": false
+        },
+        "color_image": {
+          "type": "string",
+          "required": false
+        },
+        "skeleton_guidance_scale": {
+          "type": "string",
+          "required": false
+        },
+        "skeleton_keypoints": {
+          "type": "string",
+          "required": false
+        },
+        "seed": {
+          "type": "integer",
+          "required": false
+        },
+        "filename": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "script_file": "scripts/generate_bitforge.lua"
+    },
+    {
+      "name": "animate skeleton",
+      "kind": "action",
+      "description": "Generate 4-frame animation windows from skeleton poses (Animate with skeleton). Width and height each from 16/32/64/128/256. skeleton_keypoints: JSON array of EXACTLY 3 frames of keypoints (as returned by 'skeleton estimate') — the model is a 3-frame window; pass consecutive pose frames. reference_image is the character on a transparent background (filespace path). Output: 4 PNG files (flat names <base>_f1..f4).",
+      "parameters": {
+        "width": {
+          "type": "integer",
+          "required": true
+        },
+        "height": {
+          "type": "integer",
+          "required": true
+        },
+        "reference_image": {
+          "type": "string",
+          "required": true
+        },
+        "skeleton_keypoints": {
+          "type": "string",
+          "required": true
+        },
+        "guidance_scale": {
+          "type": "string",
+          "required": false
+        },
+        "view": {
+          "type": "string",
+          "required": false
+        },
+        "direction": {
+          "type": "string",
+          "required": false
+        },
+        "isometric": {
+          "type": "boolean",
+          "required": false
+        },
+        "oblique_projection": {
+          "type": "boolean",
+          "required": false
+        },
+        "init_images": {
+          "type": "string",
+          "required": false
+        },
+        "init_image_strength": {
+          "type": "integer",
+          "required": false
+        },
+        "inpainting_images": {
+          "type": "string",
+          "required": false
+        },
+        "mask_images": {
+          "type": "string",
+          "required": false
+        },
+        "color_image": {
+          "type": "string",
+          "required": false
+        },
+        "seed": {
+          "type": "integer",
+          "required": false
+        },
+        "filename": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "script_file": "scripts/animate_skeleton.lua"
+    },
+    {
+      "name": "animate text",
+      "kind": "action",
+      "description": "Text-guided animation: describe a character and an action, get 4 animation frames. Size is fixed at 64x64 (width/height optional, must be 64). Longer animations via start_frame_index windows (model always generates 4 frames). reference_image required (filespace path). Output: 4 PNG files (flat names <base>_f1..f4).",
+      "parameters": {
+        "description": {
+          "type": "string",
+          "required": true
+        },
+        "action": {
+          "type": "string",
+          "required": true
+        },
+        "reference_image": {
+          "type": "string",
+          "required": true
+        },
+        "width": {
+          "type": "integer",
+          "required": false
+        },
+        "height": {
+          "type": "integer",
+          "required": false
+        },
+        "negative_description": {
+          "type": "string",
+          "required": false
+        },
+        "text_guidance_scale": {
+          "type": "string",
+          "required": false
+        },
+        "image_guidance_scale": {
+          "type": "string",
+          "required": false
+        },
+        "n_frames": {
+          "type": "integer",
+          "required": false
+        },
+        "start_frame_index": {
+          "type": "integer",
+          "required": false
+        },
+        "view": {
+          "type": "string",
+          "required": false
+        },
+        "direction": {
+          "type": "string",
+          "required": false
+        },
+        "init_images": {
+          "type": "string",
+          "required": false
+        },
+        "init_image_strength": {
+          "type": "integer",
+          "required": false
+        },
+        "inpainting_images": {
+          "type": "string",
+          "required": false
+        },
+        "mask_images": {
+          "type": "string",
+          "required": false
+        },
+        "color_image": {
+          "type": "string",
+          "required": false
+        },
+        "seed": {
+          "type": "integer",
+          "required": false
+        },
+        "filename": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "script_file": "scripts/animate_text.lua"
+    },
+    {
+      "name": "rotate",
+      "kind": "action",
+      "description": "Rotate a character or object: turn it between camera views (from_view/to_view) and directions (from_direction/to_direction), or by degrees (view_change/direction_change). Width/height each from 16/32/64/128. from_image required (filespace path); mask_image (optional) requires init_image. Output: one PNG file (flat name: rotate-<timestamp>_s<seed>.png, or your filename).",
+      "parameters": {
+        "from_image": {
+          "type": "string",
+          "required": true
+        },
+        "width": {
+          "type": "integer",
+          "required": true
+        },
+        "height": {
+          "type": "integer",
+          "required": true
+        },
+        "from_view": {
+          "type": "string",
+          "required": false
+        },
+        "to_view": {
+          "type": "string",
+          "required": false
+        },
+        "from_direction": {
+          "type": "string",
+          "required": false
+        },
+        "to_direction": {
+          "type": "string",
+          "required": false
+        },
+        "view_change": {
+          "type": "string",
+          "required": false
+        },
+        "direction_change": {
+          "type": "string",
+          "required": false
+        },
+        "image_guidance_scale": {
+          "type": "string",
+          "required": false
+        },
+        "isometric": {
+          "type": "boolean",
+          "required": false
+        },
+        "oblique_projection": {
+          "type": "boolean",
+          "required": false
+        },
+        "init_image": {
+          "type": "string",
+          "required": false
+        },
+        "init_image_strength": {
+          "type": "integer",
+          "required": false
+        },
+        "mask_image": {
+          "type": "string",
+          "required": false
+        },
+        "color_image": {
+          "type": "string",
+          "required": false
+        },
+        "seed": {
+          "type": "integer",
+          "required": false
+        },
+        "filename": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "script_file": "scripts/rotate.lua"
+    },
+    {
+      "name": "inpaint",
+      "kind": "action",
+      "description": "Edit existing pixel art: describe the change; white regions of mask_image are regenerated on inpainting_image. Width/height 16-200 each, area at most 200x200. Both inpainting_image and mask_image required (filespace paths). Output: one PNG file (flat name: inpaint-<timestamp>_s<seed>.png, or your filename).",
+      "parameters": {
+        "description": {
+          "type": "string",
+          "required": true
+        },
+        "inpainting_image": {
+          "type": "string",
+          "required": true
+        },
+        "mask_image": {
+          "type": "string",
+          "required": true
+        },
+        "width": {
+          "type": "integer",
+          "required": true
+        },
+        "height": {
+          "type": "integer",
+          "required": true
+        },
+        "negative_description": {
+          "type": "string",
+          "required": false
+        },
+        "text_guidance_scale": {
+          "type": "string",
+          "required": false
+        },
+        "outline": {
+          "type": "string",
+          "required": false
+        },
+        "shading": {
+          "type": "string",
+          "required": false
+        },
+        "detail": {
+          "type": "string",
+          "required": false
+        },
+        "view": {
+          "type": "string",
+          "required": false
+        },
+        "direction": {
+          "type": "string",
+          "required": false
+        },
+        "isometric": {
+          "type": "boolean",
+          "required": false
+        },
+        "oblique_projection": {
+          "type": "boolean",
+          "required": false
+        },
+        "no_background": {
+          "type": "boolean",
+          "required": false
+        },
+        "init_image": {
+          "type": "string",
+          "required": false
+        },
+        "init_image_strength": {
+          "type": "integer",
+          "required": false
+        },
+        "color_image": {
+          "type": "string",
+          "required": false
+        },
+        "seed": {
+          "type": "integer",
+          "required": false
+        },
+        "filename": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "script_file": "scripts/inpaint.lua"
+    },
+    {
+      "name": "skeleton estimate",
+      "kind": "action",
+      "description": "Estimate the skeleton of a character image: returns 18 labeled keypoints (with z_index for depth ordering) to edit and feed back into 'animate skeleton'. Input image is a filespace path (character on a transparent background); size 16-256 per side. No image output — keypoints come back as data.",
+      "parameters": {
+        "image": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "script_file": "scripts/skeleton_estimate.lua"
+    },
+    {
+      "name": "balance get",
+      "kind": "action",
+      "description": "Current PixelLab account balance in USD. Cheap pre-flight before generation runs.",
+      "script_file": "scripts/balance_get.lua"
+    }
+  ]
+}
