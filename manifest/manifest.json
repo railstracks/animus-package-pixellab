@@ -1,9 +1,9 @@
 {
   "kind": "api_package",
   "name": "pixellab",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "display_name": "PixelLab",
-  "description": "PixelLab pixel-art generation API — text-to-image (Pixflux), style transfer (Bitforge), animation (skeleton + text), rotation, inpainting, skeleton estimation. Images flow through the package filespace: inputs are paths to files (usually outputs of earlier calls), outputs are written as PNG files and returned as paths.",
+  "description": "PixelLab pixel-art generation API \u2014 text-to-image (Pixflux), style transfer (Bitforge), animation (skeleton + text), rotation, inpainting, skeleton estimation. Images flow through the package filespace: inputs are paths to files (usually outputs of earlier calls), outputs are written as PNG files and returned as paths.",
   "keywords": [
     "pixellab",
     "pixel art",
@@ -214,7 +214,7 @@
     {
       "name": "animate skeleton",
       "kind": "action",
-      "description": "Generate 4-frame animation windows from skeleton poses (Animate with skeleton). Width and height each from 16/32/64/128/256. skeleton_keypoints: JSON array of EXACTLY 3 frames of keypoints (as returned by 'skeleton estimate') — the model is a 3-frame window; pass consecutive pose frames. reference_image is the character on a transparent background (filespace path). Output: 4 PNG files (flat names <base>_f1..f4).",
+      "description": "Generate 4-frame animation windows from skeleton poses (Animate with skeleton). Width and height each from 16/32/64/128/256. skeleton_keypoints: JSON array of EXACTLY 3 frames of keypoints (as returned by 'skeleton estimate') \u2014 the model is a 3-frame window; pass consecutive pose frames. reference_image is the character on a transparent background (filespace path). Output: 4 PNG files (flat names <base>_f1..f4).",
       "parameters": {
         "width": {
           "type": "integer",
@@ -538,7 +538,7 @@
     {
       "name": "skeleton estimate",
       "kind": "action",
-      "description": "Estimate the skeleton of a character image: returns 18 labeled keypoints (with z_index for depth ordering) to edit and feed back into 'animate skeleton'. Input image is a filespace path (character on a transparent background); size 16-256 per side. No image output — keypoints come back as data.",
+      "description": "Estimate the skeleton of a character image: returns 18 labeled keypoints (with z_index for depth ordering) to edit and feed back into 'animate skeleton'. Input image is a filespace path (character on a transparent background); size 16-256 per side. No image output \u2014 keypoints come back as data.",
       "parameters": {
         "image": {
           "type": "string",

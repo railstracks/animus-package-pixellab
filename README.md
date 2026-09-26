@@ -57,8 +57,10 @@ The commands compose into full asset pipelines:
 
 ## Cost model
 
-Every generation response carries a `usage` block (USD or generations); the
-package surfaces it in `meta.usage`. Check `balance get` before long runs.
+Every generation response carries a `usage` block (USD or generations,
+account-dependent); the package surfaces it in `meta.usage`. Check
+`balance get` before long runs — note plan-based accounts may report a
+$0.00 balance while generations still succeed.
 Client-side validation (sizes, enums, required masks, keypoint shape) fails
 before any HTTP call — mistakes are free.
 

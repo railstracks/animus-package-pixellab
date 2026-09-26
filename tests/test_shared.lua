@@ -128,6 +128,18 @@ json.decode_safe = function(s)
 end
 check("keypoints bad point rejected", select(1, shared.parse_keypoints("x", 3)) == nil, true)
 
+-- z_index rounding (live API quirk, Sept 26: estimate returns fractional, animate demands int)
+do
+  local real_dec = json.decode_safe
+  json.decode_safe = function()
+    return { { { x = 0.1, y = 0.2, label = "NOSE", z_index = -3.5 },
+               { x = 0.2, y = 0.3, label = "NECK", z_index = 2 } } }
+  end
+  local kpz = shared.parse_keypoints("ANY")
+  json.decode_safe = real_dec
+  check("keypoints fractional z_index rounded", kpz ~= nil and kpz[1][1].z_index == -3 and kpz[1][2].z_index == 2, true)
+end
+
 print("")
 if failures == 0 then
   print("test_shared: ALL OK")

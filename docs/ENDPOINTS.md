@@ -67,7 +67,7 @@ Shared conventions:
 |---|---|---|---|
 | `width` / `height` | integer | ✓ | each from 16/32/64/128/256 |
 | `reference_image` | path | ✓ | character, transparent background |
-| `skeleton_keypoints` | string (JSON) | ✓ | **exactly 3 frames** — the model is a 3-frame window; edit `skeleton estimate` output |
+| `skeleton_keypoints` | string (JSON) | ✓ | **exactly 3 frames** — the model is a 3-frame window; edit `skeleton estimate` output. Fractional `z_index` is rounded to integers (the API's estimate returns fractional, its animate demands int) |
 | `guidance_scale` | string(number) | | default 4 — reference/keypoint fidelity |
 | `view` / `direction` | enum | | |
 | `isometric` / `oblique_projection` | boolean | | |
@@ -75,10 +75,11 @@ Shared conventions:
 | `init_image_strength` | integer | | |
 | `inpainting_images` / `mask_images` | paths | | exactly 3 each |
 | `color_image` | path | | |
-| `seed` / `filename` | | | frames get `_f1.._f4` |
+| `seed` / `filename` | | | frames get `_f1.._fN` |
 
-Always generates 4 frames. Longer animations: re-run with the next 3-pose
-window, feeding prior frames via `init_images`.
+Returns 4 frames for distinct poses (identical input frames can yield
+fewer — the package writes however many images arrive). Longer animations:
+re-run with the next 3-pose window, feeding prior frames via `init_images`.
 
 ## animate text — POST /v1/animate-with-text
 

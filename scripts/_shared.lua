@@ -214,6 +214,12 @@ function shared.parse_keypoints(s, expected_n)
         return nil, "skeleton_keypoints frame " .. i .. " point " .. j ..
                     " needs x, y and label"
       end
+      -- PixelLab quirk (live test, Sept 26): their own estimate-skeleton returns
+      -- fractional z_index (-3.5, -0.5) while animate-with-skeleton validates it
+      -- as a strict integer. Rounding preserves z-order semantics, so coerce.
+      if pt.z_index ~= nil and pt.z_index ~= math.floor(pt.z_index) then
+        pt.z_index = math.floor(pt.z_index + 0.5)
+      end
     end
   end
   return kp
